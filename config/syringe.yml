@@ -1,0 +1,24 @@
+parameters:
+    sqsRegion: ""
+
+services:
+    sqsClient:
+        class: Aws\Sqs\SqsClient
+        arguments:
+            -
+                version: "2012-11-05"
+                region: %sqsRegion%
+
+    messageFactory:
+        class: Silktide\QueueBall\Sqs\MessageFactory
+
+    sqsQueue:
+        class: Silktide\QueueBall\Sqs\Queue
+        arguments:
+            - @sqsClient
+            - @messageFactory
+
+    # set the sqs queue to be default
+    silktide_queueball.defaultQueue:
+        aliasOf: @sqsQueue
+

@@ -1,0 +1,29 @@
+{
+  "name": "silktide/queueball-sqs",
+  "description": "An Amazon SQS implementation for Silktide QueueBall, the message queue abstraction system",
+  "license": "MIT",
+  "homepage": "https://github.com/silktide/queueball-sqs",
+  "require": {
+    "php": ">=5.4.0",
+    "guzzle/guzzle": "3.*",
+    "aws/aws-sdk-php": "3.*",
+    "silktide/queueball": "^2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4.*",
+    "mockery/mockery": "0.9.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Silktide\\QueueBall\\Sqs\\": "src",
+      "Silktide\\QueueBall\\Sqs\\Test\\": "test"
+    }
+  },
+  "extra": {
+    "downsider-puzzle-di": {
+      "silktide/syringe": {
+        "path": "config/syringe.yml"
+      }
+    }
+  }
+}
