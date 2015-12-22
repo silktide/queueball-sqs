@@ -3,6 +3,8 @@
 namespace Silktide\QueueBall\Sqs;
 
 use Silktide\QueueBall\Exception\QueueException;
+use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
+use Silktide\QueueBall\Message\QueueMessage;
 
 /**
  *
