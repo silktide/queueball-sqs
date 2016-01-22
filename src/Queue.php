@@ -33,7 +33,7 @@ class Queue extends AbstractQueue
     /**
      * @var int
      */
-    protected $waitTime = 0;
+    protected $waitTime = 20;
 
     /**
      * @param SqsClient $sqsClient
