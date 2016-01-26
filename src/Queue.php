@@ -15,6 +15,8 @@ use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
 class Queue extends AbstractQueue
 {
 
+    const DEFAULT_MESSAGE_LOCK_TIMEOUT = 120;
+
     /**
      * @var string
      */
@@ -57,19 +59,6 @@ class Queue extends AbstractQueue
     }
 
     /**
-     * @param int $seconds
-     * @throws \Exception
-     */
-    public function setWaitTime($seconds)
-    {
-        $seconds = (int) $seconds;
-        if ($seconds < 0 || 20 < $seconds) {
-            throw new \Exception("WaitTime must be a period between 0-20 seconds");
-        }
-        $this->waitTime = $seconds;
-    }
-
-    /**
      * @param string $queueId
      * @return string
      */
@@ -88,11 +77,11 @@ class Queue extends AbstractQueue
     /**
      * {@inheritDoc}
      */
-    public function createQueue($queueId, $messageLockTimeout = 0, $options = [])
+    public function createQueue($queueId, $options = [])
     {
-        $timeout = (int) $messageLockTimeout;
+        $timeout = empty($options["messageLockTimeout"])? self::DEFAULT_MESSAGE_LOCK_TIMEOUT: (int) $options["messageLockTimeout"];
         $attributes = [
-            "VisibilityTimeout" => empty($timeout)? self::DEFAULT_MESSAGE_LOCK_TIMEOUT: $timeout
+            "VisibilityTimeout" => $timeout
         ];
         $this->queueClient->createQueue([
             "QueueName" => $queueId,
