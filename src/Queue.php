@@ -79,7 +79,9 @@ class Queue extends AbstractQueue
      */
     public function createQueue($queueId, $options = [])
     {
-        $timeout = empty($options["messageLockTimeout"])? self::DEFAULT_MESSAGE_LOCK_TIMEOUT: (int) $options["messageLockTimeout"];
+        $timeout = (empty($options["messageLockTimeout"]) || !is_numeric($options["messageLockTimeout"]))
+            ? self::DEFAULT_MESSAGE_LOCK_TIMEOUT
+            : (int) $options["messageLockTimeout"];
         $attributes = [
             "VisibilityTimeout" => $timeout
         ];
