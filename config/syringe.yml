@@ -7,7 +7,7 @@ services:
         arguments:
             -
                 version: "2012-11-05"
-                region: %sqsRegion%
+                region: "%sqsRegion%"
 
     messageFactory:
         class: Silktide\QueueBall\Sqs\MessageFactory
@@ -15,10 +15,10 @@ services:
     sqsQueue:
         class: Silktide\QueueBall\Sqs\Queue
         arguments:
-            - @sqsClient
-            - @messageFactory
+            - "@sqsClient"
+            - "@messageFactory"
 
     # set the sqs queue to be default
     silktide_queueball.defaultQueue:
-        aliasOf: @sqsQueue
+        aliasOf: "@sqsQueue"
 

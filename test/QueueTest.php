@@ -3,7 +3,6 @@
 namespace Silktide\QueueBall\Sqs\Test;
 
 use Silktide\QueueBall\Exception\QueueException;
-use Silktide\QueueBall\Queue\AbstractQueue;
 use Silktide\QueueBall\Sqs\Queue;
 use Aws\Sqs\SqsClient;
 use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
@@ -15,17 +14,17 @@ use Silktide\QueueBall\Message\QueueMessage;
 class QueueTest extends \PHPUnit_Framework_TestCase {
 
     /**
-     * @var SqsClient
+     * @var \Mockery\Mock|SqsClient
      */
     protected $sqsClient;
 
     /**
-     * @var QueueMessageFactoryInterface
+     * @var \Mockery\Mock|QueueMessageFactoryInterface
      */
     protected $messageFactory;
 
     /**
-     * @var QueueMessage
+     * @var \Mockery\Mock|QueueMessage
      */
     protected $queueMessage;
 
@@ -39,7 +38,9 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
     {
 
         $this->queueUrl = "http://queue.com";
-        $urlReturn = \Mockery::mock("Guzzle\\Service\\Resource\\Model")->shouldReceive("get")->with("QueueUrl")->andReturn($this->queueUrl)->getMock();
+        /** @var \Mockery\Mock $urlReturn */
+        $urlReturn = \Mockery::mock("Guzzle\\Service\\Resource\\Model");
+        $urlReturn->shouldReceive("get")->with("QueueUrl")->andReturn($this->queueUrl)->getMock();
 
         $this->sqsClient = \Mockery::mock("Aws\\Sqs\\SqsClient");
         $this->sqsClient->shouldReceive("getQueueUrl")->andReturn($urlReturn);
@@ -91,7 +92,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
 
         $this->sqsClient->shouldReceive("createQueue")->atLeast()->times(1)->with($expectedArg);
 
-        $queue->createQueue($this->queueId, $timeout);
+        $queue->createQueue($this->queueId, ["messageLockTimeout" => $timeout]);
         $this->assertEquals($this->queueId, $queue->getQueueId());
     }
 
@@ -104,11 +105,11 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
             ],
             [ // default timeout
                 null,
-                AbstractQueue::DEFAULT_MESSAGE_LOCK_TIMEOUT
+                Queue::DEFAULT_MESSAGE_LOCK_TIMEOUT
             ],
             [ // default when timeout is invalid
                 "NAN",
-                AbstractQueue::DEFAULT_MESSAGE_LOCK_TIMEOUT
+                Queue::DEFAULT_MESSAGE_LOCK_TIMEOUT
             ]
         ];
     }
@@ -161,8 +162,10 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
     {
         $messageArray = [1, 2, 3];
 
-        $message = \Mockery::mock("Guzzle\\Common\\Collection")->shouldReceive("toArray")->andReturn($messageArray)->getMock();
-        $this->sqsClient->shouldReceive("receiveMessage")->with(["QueueUrl" => $this->queueUrl, "WaitTimeSeconds" => 0])->andReturn($message);
+        /** @var \Mockery\Mock $message */
+        $message = \Mockery::mock("Guzzle\\Common\\Collection");
+        $message->shouldReceive("toArray")->andReturn($messageArray)->getMock();
+        $this->sqsClient->shouldReceive("receiveMessage")->with(["QueueUrl" => $this->queueUrl, "WaitTimeSeconds" => 20])->andReturn($message);
         $this->messageFactory->shouldReceive("createMessage")->with($messageArray, $this->queueId)->andReturn(true);
 
         $queue = new Queue($this->sqsClient, $this->messageFactory, $this->queueId);
