@@ -92,7 +92,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
 
         $this->sqsClient->shouldReceive("createQueue")->atLeast()->times(1)->with($expectedArg);
 
-        $queue->createQueue($this->queueId, $timeout);
+        $queue->createQueue($this->queueId, ["messageLockTimeout" => $timeout]);
         $this->assertEquals($this->queueId, $queue->getQueueId());
     }
 
@@ -165,7 +165,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
         /** @var \Mockery\Mock $message */
         $message = \Mockery::mock("Guzzle\\Common\\Collection");
         $message->shouldReceive("toArray")->andReturn($messageArray)->getMock();
-        $this->sqsClient->shouldReceive("receiveMessage")->with(["QueueUrl" => $this->queueUrl, "WaitTimeSeconds" => 0])->andReturn($message);
+        $this->sqsClient->shouldReceive("receiveMessage")->with(["QueueUrl" => $this->queueUrl, "WaitTimeSeconds" => 20])->andReturn($message);
         $this->messageFactory->shouldReceive("createMessage")->with($messageArray, $this->queueId)->andReturn(true);
 
         $queue = new Queue($this->sqsClient, $this->messageFactory, $this->queueId);
