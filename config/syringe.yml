@@ -12,11 +12,16 @@ services:
     messageFactory:
         class: Silktide\QueueBall\Sqs\MessageFactory
 
-    sqsQueue:
+    abstractSqsQueue:
+        abstract: true
         class: Silktide\QueueBall\Sqs\Queue
         arguments:
-            - "@sqsClient"
-            - "@messageFactory"
+            client: "@sqsClient"
+            messageFactory: "@messageFactory"
+            queueId: null
+
+    sqsQueue:
+        extends: "abstractSqsQueue"
 
     # set the sqs queue to be default
     silktide_queueball.defaultQueue:
