@@ -2,11 +2,9 @@
 
 namespace Silktide\QueueBall\Sqs;
 
-use Aws\AwsClient;
 use Aws\Sqs\SqsClient;
 use Silktide\QueueBall\Message\QueueMessage;
 use Silktide\QueueBall\Queue\AbstractQueue;
-use Silktide\QueueBall\Exception\QueueException;
 use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
 
 /**
