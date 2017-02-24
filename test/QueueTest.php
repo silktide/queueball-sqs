@@ -2,6 +2,7 @@
 
 namespace Silktide\QueueBall\Sqs\Test;
 
+use Aws\Result;
 use Silktide\QueueBall\Exception\QueueException;
 use Silktide\QueueBall\Sqs\Queue;
 use Aws\Sqs\SqsClient;
@@ -39,13 +40,13 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
 
         $this->queueUrl = "http://queue.com";
         /** @var \Mockery\Mock $urlReturn */
-        $urlReturn = \Mockery::mock("Guzzle\\Service\\Resource\\Model");
-        $urlReturn->shouldReceive("get")->with("QueueUrl")->andReturn($this->queueUrl)->getMock();
+        $urlReturn = \Mockery::mock(Result::class);
+        $urlReturn->shouldReceive("get")->with("QueueUrl")->andReturn($this->queueUrl);
 
-        $this->sqsClient = \Mockery::mock("Aws\\Sqs\\SqsClient");
+        $this->sqsClient = \Mockery::mock(SqsClient::class);
         $this->sqsClient->shouldReceive("getQueueUrl")->andReturn($urlReturn);
 
-        $this->queueMessage = \Mockery::mock("Silktide\\QueueBall\\Message\\QueueMessage");
+        $this->queueMessage = \Mockery::mock(QueueMessage::class);
         $this->queueMessage->shouldReceive(
             [
                 "getQueueId" => $this->queueId,
@@ -53,7 +54,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
             ]
         );
 
-        $this->messageFactory = \Mockery::mock("Silktide\\QueueBall\\Message\\QueueMessageFactoryInterface");
+        $this->messageFactory = \Mockery::mock(QueueMessageFactoryInterface::class);
     }
 
     public function testQueueId()
