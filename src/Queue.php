@@ -31,6 +31,11 @@ class Queue extends AbstractQueue
     protected $messageFactory;
 
     /**
+     * @var array
+     */
+    protected $middleware;
+
+    /**
      * @var int
      */
     protected $waitTime = 20;
@@ -38,12 +43,19 @@ class Queue extends AbstractQueue
     /**
      * @param SqsClient $sqsClient
      * @param QueueMessageFactoryInterface $messageFactory
+     * @param array $middleware
      * @param string|null $queueId
      */
-    public function __construct(SqsClient $sqsClient, QueueMessageFactoryInterface $messageFactory, $queueId = null)
+    public function __construct(
+        SqsClient $sqsClient,
+        QueueMessageFactoryInterface $messageFactory,
+        array $middleware = [],
+        $queueId = null
+    )
     {
         parent::__construct($queueId);
         $this->queueClient = $sqsClient;
+        $this->middleware = $middleware;
         $this->messageFactory = $messageFactory;
     }
 
@@ -105,6 +117,7 @@ class Queue extends AbstractQueue
     public function sendMessage($messageBody, $queueId = null)
     {
         $queueUrl = $this->getQueueUrl($queueId);
+
         $this->queueClient->sendMessage([
             "QueueUrl" => $queueUrl,
             "MessageBody" => json_encode($messageBody)
@@ -124,11 +137,15 @@ class Queue extends AbstractQueue
 
         $queueUrl = $this->getQueueUrl($queueId);
         $entries = [];
-        foreach ($messageBodies as $key => $body) {
+
+        $i = 0;
+        foreach ($messageBodies as $body) {
             $entries[] = [
-                "Id" => $key,
+                "Id" => $i,
                 "MessageBody" => json_encode($body)
             ];
+
+            $i++;
         }
 
         $this->queueClient->sendMessageBatch([

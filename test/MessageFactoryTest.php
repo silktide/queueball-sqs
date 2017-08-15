@@ -2,14 +2,13 @@
 
 namespace Silktide\QueueBall\Sqs\Test;
 
+use PHPUnit\Framework\TestCase;
 use Silktide\QueueBall\Exception\QueueException;
 use Silktide\QueueBall\Sqs\MessageFactory;
 
-/**
- *
- */
-class MessageFactoryTest extends \PHPUnit_Framework_TestCase {
 
+class MessageFactoryTest extends TestCase
+{
     public function testExceptions()
     {
         $factory = new MessageFactory();

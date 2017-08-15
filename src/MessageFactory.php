@@ -30,9 +30,16 @@ class MessageFactory implements QueueMessageFactoryInterface
 
         $queueMessage = new QueueMessage();
         $queueMessage->setId($message["MessageId"]);
-        $queueMessage->setMessage(json_decode($message["Body"], true));
         $queueMessage->setReceiptId($message["ReceiptHandle"]);
         $queueMessage->setQueueId($queueId);
+
+        $decoded = json_decode($message["Body"]);
+
+        if (isset($decoded["QueueBallS3Url"])) {
+
+
+        }
+        $queueMessage->setMessage(json_decode($message["Body"], true));
 
         if (!empty($message["Attributes"]) || !empty($message["MessageAttributes"])) {
             $attributes = empty($message["Attributes"])? []: $message["Attributes"];

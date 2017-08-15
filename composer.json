@@ -9,7 +9,7 @@
     "silktide/queueball": "^2.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "4.*",
+    "phpunit/phpunit": "~6",
     "mockery/mockery": "0.9.*"
   },
   "autoload": {
