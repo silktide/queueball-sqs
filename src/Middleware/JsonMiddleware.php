@@ -13,7 +13,7 @@ class JsonMiddleware implements MiddlewareInterface
     {
         $response = json_decode($body, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception("Unable to encode provided JSON. '".json_last_error_msg()."'");
+            throw new \Exception("Unable to decode provided JSON. '".json_last_error_msg()."'. Len: ".strlen($body));
         }
 
         return $response;

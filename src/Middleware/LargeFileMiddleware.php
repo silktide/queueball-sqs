@@ -33,7 +33,8 @@ class LargeFileMiddleware implements MiddlewareInterface
 
         $this->s3Client->putObject([
             "Bucket" => $this->bucket,
-            "Key" => $key
+            "Key" => $key,
+            "Body" => $body
         ]);
 
         return "s3:{$this->bucket}:{$key}";

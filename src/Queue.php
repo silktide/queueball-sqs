@@ -6,6 +6,7 @@ use Aws\Sqs\SqsClient;
 use Silktide\QueueBall\Message\QueueMessage;
 use Silktide\QueueBall\Queue\AbstractQueue;
 use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
+use Silktide\QueueBall\Sqs\Middleware\MiddlewareInterface;
 
 /**
  *
@@ -31,7 +32,7 @@ class Queue extends AbstractQueue
     protected $messageFactory;
 
     /**
-     * @var array
+     * @var MiddlewareInterface
      */
     protected $middleware;
 
@@ -43,13 +44,13 @@ class Queue extends AbstractQueue
     /**
      * @param SqsClient $sqsClient
      * @param QueueMessageFactoryInterface $messageFactory
-     * @param array $middleware
+     * @param MiddlewareInterface $middleware
      * @param string|null $queueId
      */
     public function __construct(
         SqsClient $sqsClient,
         QueueMessageFactoryInterface $messageFactory,
-        array $middleware = [],
+        MiddlewareInterface $middleware,
         $queueId = null
     )
     {
@@ -120,7 +121,7 @@ class Queue extends AbstractQueue
 
         $this->queueClient->sendMessage([
             "QueueUrl" => $queueUrl,
-            "MessageBody" => json_encode($messageBody)
+            "MessageBody" => $this->middleware->request($messageBody)
         ]);
     }
 
@@ -139,10 +140,10 @@ class Queue extends AbstractQueue
         $entries = [];
 
         $i = 0;
-        foreach ($messageBodies as $body) {
+        foreach ($messageBodies as $messageBody) {
             $entries[] = [
                 "Id" => $i,
-                "MessageBody" => json_encode($body)
+                "MessageBody" => $this->middleware->request($messageBody)
             ];
 
             $i++;
