@@ -6,6 +6,7 @@ use Aws\Sqs\SqsClient;
 use Silktide\QueueBall\Message\QueueMessage;
 use Silktide\QueueBall\Queue\AbstractQueue;
 use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
+use Silktide\QueueBall\Sqs\Middleware\MiddlewareInterface;
 
 /**
  *
@@ -31,6 +32,11 @@ class Queue extends AbstractQueue
     protected $messageFactory;
 
     /**
+     * @var MiddlewareInterface
+     */
+    protected $middleware;
+
+    /**
      * @var int
      */
     protected $waitTime = 20;
@@ -38,12 +44,19 @@ class Queue extends AbstractQueue
     /**
      * @param SqsClient $sqsClient
      * @param QueueMessageFactoryInterface $messageFactory
+     * @param MiddlewareInterface $middleware
      * @param string|null $queueId
      */
-    public function __construct(SqsClient $sqsClient, QueueMessageFactoryInterface $messageFactory, $queueId = null)
+    public function __construct(
+        SqsClient $sqsClient,
+        QueueMessageFactoryInterface $messageFactory,
+        MiddlewareInterface $middleware,
+        $queueId = null
+    )
     {
         parent::__construct($queueId);
         $this->queueClient = $sqsClient;
+        $this->middleware = $middleware;
         $this->messageFactory = $messageFactory;
     }
 
@@ -105,9 +118,10 @@ class Queue extends AbstractQueue
     public function sendMessage($messageBody, $queueId = null)
     {
         $queueUrl = $this->getQueueUrl($queueId);
+
         $this->queueClient->sendMessage([
             "QueueUrl" => $queueUrl,
-            "MessageBody" => json_encode($messageBody)
+            "MessageBody" => $this->middleware->request($messageBody)
         ]);
     }
 
@@ -124,11 +138,15 @@ class Queue extends AbstractQueue
 
         $queueUrl = $this->getQueueUrl($queueId);
         $entries = [];
-        foreach ($messageBodies as $key => $body) {
+
+        $i = 0;
+        foreach ($messageBodies as $messageBody) {
             $entries[] = [
-                "Id" => $key,
-                "MessageBody" => json_encode($body)
+                "Id" => $i,
+                "MessageBody" => $this->middleware->request($messageBody)
             ];
+
+            $i++;
         }
 
         $this->queueClient->sendMessageBatch([

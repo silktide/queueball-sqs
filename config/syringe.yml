@@ -1,6 +1,13 @@
 parameters:
     sqsRegion: ""
 
+    # SQS has a max filesize limit of 256kb, if it's bigger than that, we want to store the file in S3 and fetch it
+    # from there instead
+    sizeThreshold: 262144
+    storageBucket: cache.silktide.com
+    storageRegion: "us-east-1"
+    storagePrefix: sqs
+
 services:
     sqsClient:
         class: Aws\Sqs\SqsClient
@@ -11,14 +18,40 @@ services:
 
     messageFactory:
         class: Silktide\QueueBall\Sqs\MessageFactory
+        arguments:
+          - "@middlewareGroup"
 
     abstractSqsQueue:
         abstract: true
         class: Silktide\QueueBall\Sqs\Queue
         arguments:
-            client: "@sqsClient"
-            messageFactory: "@messageFactory"
-            queueId: null
+            - "@sqsClient"
+            - "@messageFactory"
+            - "@middlewareGroup"
+
+    middlewareGroup:
+        class: Silktide\QueueBall\Sqs\Middleware\MiddlewareGroup
+        arguments:
+          -
+            - "@jsonMiddleware"
+            - "@largeFileMiddleware"
+
+    jsonMiddleware:
+        class: Silktide\QueueBall\Sqs\Middleware\JsonMiddleware
+
+    largeFileMiddleware:
+        class: Silktide\QueueBall\Sqs\Middleware\LargeFileMiddleware
+        arguments:
+          - "@s3Client"
+          - "%storageBucket%"
+          - "%storagePrefix%"
+          - "%sizeThreshold%"
+
+    s3Client:
+        class: Aws\S3\S3Client
+        arguments:
+          - version: "latest"
+            region: "%storageRegion%"
 
     sqsQueue:
         extends: "abstractSqsQueue"

@@ -5,12 +5,16 @@ namespace Silktide\QueueBall\Sqs;
 use Silktide\QueueBall\Exception\QueueException;
 use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
 use Silktide\QueueBall\Message\QueueMessage;
+use Silktide\QueueBall\Sqs\Middleware\MiddlewareInterface;
 
-/**
- *
- */
 class MessageFactory implements QueueMessageFactoryInterface
 {
+    protected $middleware;
+
+    public function __construct(MiddlewareInterface $middleware)
+    {
+        $this->middleware = $middleware;
+    }
 
     /**
      * {@inheritDoc}
@@ -30,10 +34,9 @@ class MessageFactory implements QueueMessageFactoryInterface
 
         $queueMessage = new QueueMessage();
         $queueMessage->setId($message["MessageId"]);
-        $queueMessage->setMessage(json_decode($message["Body"], true));
         $queueMessage->setReceiptId($message["ReceiptHandle"]);
         $queueMessage->setQueueId($queueId);
-
+        $queueMessage->setMessage($this->middleware->response($message["Body"]));
         if (!empty($message["Attributes"]) || !empty($message["MessageAttributes"])) {
             $attributes = empty($message["Attributes"])? []: $message["Attributes"];
             $attributes = array_merge($attributes, empty($message["MessageAttributes"])? []: $message["MessageAttributes"]);

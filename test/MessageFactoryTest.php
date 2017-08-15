@@ -2,17 +2,19 @@
 
 namespace Silktide\QueueBall\Sqs\Test;
 
+use PHPUnit\Framework\TestCase;
 use Silktide\QueueBall\Exception\QueueException;
+use Silktide\QueueBall\Message\QueueMessage;
 use Silktide\QueueBall\Sqs\MessageFactory;
+use Silktide\QueueBall\Sqs\Middleware\JsonMiddleware;
+use Silktide\QueueBall\Sqs\Middleware\MiddlewareGroup;
 
-/**
- *
- */
-class MessageFactoryTest extends \PHPUnit_Framework_TestCase {
 
+class MessageFactoryTest extends TestCase
+{
     public function testExceptions()
     {
-        $factory = new MessageFactory();
+        $factory = new MessageFactory(new MiddlewareGroup());
 
         // empty queue or malformed data
         $data = [];
@@ -48,12 +50,12 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase {
 
     public function testRequiredDataMapping()
     {
-        $factory = new MessageFactory();
+        $factory = new MessageFactory(new MiddlewareGroup());
 
         $expected = [
             "QueueId" => "queue",
             "Id" => "id",
-            "Message" => "body",
+            "Message" => "HereIsAMessage",
             "ReceiptId" => "receiptId"
         ];
 
@@ -61,14 +63,14 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase {
             "Messages" => [
                 [
                     "MessageId" => $expected["Id"],
-                    "Body" => json_encode($expected["Message"]),
+                    "Body" => $expected["Message"],
                     "ReceiptHandle" => $expected["ReceiptId"]
                 ]
             ]
         ];
 
         $queueMessage = $factory->createMessage($data, $expected["QueueId"]);
-        $this->assertInstanceOf("Silktide\\QueueBall\\Message\\QueueMessage", $queueMessage);
+        $this->assertInstanceOf(QueueMessage::class, $queueMessage);
 
         foreach ($expected as $property => $value) {
             $this->assertEquals($value, $queueMessage->{"get" . $property}());
@@ -83,7 +85,7 @@ class MessageFactoryTest extends \PHPUnit_Framework_TestCase {
      */
     public function testAttributeMapping($messageData, $expected)
     {
-        $factory = new MessageFactory();
+        $factory = new MessageFactory(new MiddlewareGroup());
 
         $data = [
             "Messages" => [

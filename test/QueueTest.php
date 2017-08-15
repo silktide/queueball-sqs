@@ -3,16 +3,15 @@
 namespace Silktide\QueueBall\Sqs\Test;
 
 use Aws\Result;
+use PHPUnit\Framework\TestCase;
 use Silktide\QueueBall\Exception\QueueException;
+use Silktide\QueueBall\Sqs\Middleware\MiddlewareGroup;
 use Silktide\QueueBall\Sqs\Queue;
 use Aws\Sqs\SqsClient;
 use Silktide\QueueBall\Message\QueueMessageFactoryInterface;
 use Silktide\QueueBall\Message\QueueMessage;
 
-/**
- *
- */
-class QueueTest extends \PHPUnit_Framework_TestCase {
+class QueueTest extends TestCase {
 
     /**
      * @var \Mockery\Mock|SqsClient
@@ -60,7 +59,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
     public function testQueueId()
     {
         // no queueId
-        $queue = new Queue($this->sqsClient, $this->messageFactory);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup());
 
         try {
             $queue->getQueueId();
@@ -69,7 +68,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
             $this->assertEquals("No queue ID has been set", $e->getMessage());
         }
 
-        $queue = new Queue($this->sqsClient, $this->messageFactory, $this->queueId);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup(), $this->queueId);
 
         $this->assertEquals($this->queueId, $queue->getQueueId());
     }
@@ -82,7 +81,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
      */
     public function testCreateQueue($timeout, $expectedTimeout)
     {
-        $queue = new Queue($this->sqsClient, $this->messageFactory);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup());
 
         $expectedArg = [
             "QueueName" => $this->queueId,
@@ -124,7 +123,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
         $this->sqsClient->shouldReceive("deleteQueue")->twice()->with($expectedArg);
 
 
-        $queue = new Queue($this->sqsClient, $this->messageFactory);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup());
         try {
             $queue->deleteQueue();
             $this->fail("should not be able to delete a queue without setting or passing a queue ID");
@@ -148,15 +147,16 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
 
     public function testSendMessage()
     {
-        $queue = new Queue($this->sqsClient, $this->messageFactory, $this->queueId);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup(), $this->queueId);
 
         $message = "message";
         $expectedArg = [
             "QueueUrl" => $this->queueUrl,
-            "MessageBody" => json_encode($message)
+            "MessageBody" => $message
         ];
         $this->sqsClient->shouldReceive("sendMessage")->with($expectedArg)->once();
         $queue->sendMessage($message, $this->queueId);
+        $this->assertTrue(true);
     }
 
     public function testReceiveMessage()
@@ -169,7 +169,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
         $this->sqsClient->shouldReceive("receiveMessage")->with(["QueueUrl" => $this->queueUrl, "WaitTimeSeconds" => 20])->andReturn($message);
         $this->messageFactory->shouldReceive("createMessage")->with($messageArray, $this->queueId)->andReturn(true);
 
-        $queue = new Queue($this->sqsClient, $this->messageFactory, $this->queueId);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup(), $this->queueId);
 
         $this->assertTrue($queue->receiveMessage());
     }
@@ -182,8 +182,9 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
         ];
         $this->sqsClient->shouldReceive("deleteMessage")->with($expectedArg)->once();
 
-        $queue = new Queue($this->sqsClient, $this->messageFactory);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup());
         $queue->completeMessage($this->queueMessage);
+        $this->assertTrue(true);
     }
 
     public function testReturnMessage()
@@ -195,8 +196,9 @@ class QueueTest extends \PHPUnit_Framework_TestCase {
         ];
         $this->sqsClient->shouldReceive("changeMessageVisibility")->with($expectedArg)->once();
 
-        $queue = new Queue($this->sqsClient, $this->messageFactory);
+        $queue = new Queue($this->sqsClient, $this->messageFactory, new MiddlewareGroup());
         $queue->returnMessage($this->queueMessage);
+        $this->assertTrue(true);
     }
 
 }
