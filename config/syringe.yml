@@ -54,9 +54,10 @@ services:
             region: "%storageRegion%"
 
     sqsQueue:
-        extends: "abstractSqsQueue"
+        class: Silktide\QueueBall\Sqs\Queue
+        extends: "@abstractSqsQueue"
 
     # set the sqs queue to be default
-    silktide_queueball.defaultQueue:
+    silktide_queueball::defaultQueue:
         aliasOf: "@sqsQueue"
 
